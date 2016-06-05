@@ -50,8 +50,20 @@ public class SheetReader {
 		Sheet incomplete = readSheet(incompletedFileName);
 		System.out.println(incomplete.dancers.size());
 		List<SimpleEntry<Integer, DancerRow>> list = incomplete.dancers.stream().collect(Collectors.groupingBy(DancerRow::getUserId))
-				.entrySet().stream().map(x -> new AbstractMap.SimpleEntry<Integer, DancerRow>(x.getKey(), x.getValue().get(0)))
+				.entrySet().stream()
+				.filter(x -> x.getValue().size() > 1)
+				.filter(x -> { // this one you might want to drop.
+					String fullName = x.getValue().get(0).fullName;
+					for (int i = 1; i < x.getValue().size(); i++) {
+						if (!fullName.equalsIgnoreCase(x.getValue().get(i).fullName)) {
+							return true;
+						}
+					}
+					return false;
+				})
+				.map(x -> new AbstractMap.SimpleEntry<Integer, DancerRow>(x.getKey(), x.getValue().get(0)))
 				.collect(Collectors.toList());
+		System.out.println(list.size());
 	}
 
 	public static Sheet readSheet(String fileName) throws IOException {
